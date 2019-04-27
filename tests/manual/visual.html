@@ -40,9 +40,68 @@
 <div id="log"></div>
 <div id="hit" style="background: #42d692; width: 150px; height: 150px;"></div>
 
+<div id="updatenote" class="updatenote mt10"> loading model ..</div>
+<video class="videobox canvasbox" autoplay="autoplay" id="myvideo"></video>
+<canvas id="canvas" class="border canvasbox"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/handtrackjs/dist/handtrack.min.js"> </script>
 
 <script src="../../hammer.js"></script>
 <script>
+    const video = document.getElementById("myvideo");
+    const canvas = document.getElementById("canvas");
+    const context = canvas.getContext("2d");
+    let updateNote = document.getElementById("updatenote");
+
+    let imgindex = 1
+    let isVideo = false;
+    let model = null;
+
+    // video.width = 500
+    // video.height = 400
+
+    const modelParams = {
+        flipHorizontal: true,   // flip e.g for video
+        maxNumBoxes: 20,        // maximum number of boxes to detect
+        iouThreshold: 0.5,      // ioU threshold for non-max suppression
+        scoreThreshold: 0.6,    // confidence threshold for predictions.
+    }
+
+
+    function startVideo() {
+        handTrack.startVideo(video).then(function (status) {
+            console.log("video started", status);
+            if (status) {
+                updateNote.innerText = "Video started. Now tracking"
+                isVideo = true
+                runDetection()
+            } else {
+                updateNote.innerText = "Please enable video"
+            }
+        });
+    }
+
+    function runDetection() {
+        model.detect(video).then(predictions => {
+            console.log("Predictions: ", predictions);
+            model.renderPredictions(predictions, canvas, context, video);
+            if (isVideo) {
+                requestAnimationFrame(runDetection);
+            }
+        });
+    }
+
+    // Load the model.
+    handTrack.load(modelParams).then(lmodel => {
+        // detect objects in the image.
+        model = lmodel
+        updateNote.innerText = "Loaded Model!"
+        runDetectionImage(handimg)
+        trackButton.disabled = false
+        nextImageButton.disabled = false
+    });
+
+    startVideo();
+
 
     var reqAnimationFrame = (function () {
         return window[Hammer.prefixed(window, 'requestAnimationFrame')] || function (callback) {
