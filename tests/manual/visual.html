@@ -103,6 +103,19 @@
     startVideo();
 
 
+    class HandrackInput extends Hammer.Input {
+        constructor() {
+            super(...arguments);
+            console.log('created!');
+        }
+
+        handler(ev) {
+            console.log('handler');
+        }
+    }
+
+
+
     var reqAnimationFrame = (function () {
         return window[Hammer.prefixed(window, 'requestAnimationFrame')] || function (callback) {
             window.setTimeout(callback, 1000 / 60);
@@ -119,7 +132,7 @@
     var transform;
     var timer;
 
-    var mc = new Hammer.Manager(el);
+    var mc = new Hammer.Manager(el, {inputClass: HandrackInput});
 
     mc.add(new Hammer.Pan({ threshold: 0, pointers: 0 }));
 
